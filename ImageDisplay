@@ -1,0 +1,59 @@
+
+/* 
+author YueMinJiang 2016-03-23
+*/
+
+import java.awt.FlowLayout;
+import java.awt.image.BufferedImage;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+
+import org.opencv.core.Mat;
+import org.opencv.highgui.Highgui;
+import org.opencv.imgproc.Imgproc;
+
+public class ImageDisplay {
+	public static void DisplayImageFromFile(String Windowname,
+			String ImageFilePath, boolean resizechoice, int resizerange) // resize-range :0-100
+	{
+		Mat InputImage;
+		InputImage = Highgui.imread(ImageFilePath);
+
+		if (resizechoice) {
+			InputImage = ImageTransfer.ReducedMatImageScale(InputImage, resizerange);
+		}
+		// MatToImage
+		BufferedImage DisplayImage;
+		int type = BufferedImage.TYPE_BYTE_GRAY;
+
+		if (InputImage.channels() > 1) {
+			Mat ProcImage = new Mat();
+			Imgproc.cvtColor(InputImage, ProcImage, Imgproc.COLOR_BGR2RGB);
+			type = BufferedImage.TYPE_3BYTE_BGR;
+			InputImage = ProcImage;
+		}
+		byte[] b = new byte[InputImage.channels() * InputImage.cols()
+				* InputImage.rows()];
+		InputImage.get(0, 0, b); // get all the pixels
+		DisplayImage = new BufferedImage(InputImage.cols(), InputImage.rows(),
+				type);
+		DisplayImage.getRaster().setDataElements(0, 0, InputImage.cols(),
+				InputImage.rows(), b);
+
+		// display
+		ImageIcon icon = new ImageIcon(DisplayImage);
+		JFrame frame = new JFrame();
+		frame.setLayout(new FlowLayout());
+		frame.setSize(DisplayImage.getWidth(null) + 50,
+				DisplayImage.getHeight(null) + 50);
+		frame.setTitle(Windowname);
+		JLabel lbl = new JLabel();
+		lbl.setIcon(icon);
+		frame.add(lbl);
+		frame.setVisible(true);
+		frame.setName("DisplayImageFromFile");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+}
